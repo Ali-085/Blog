@@ -1,0 +1,101 @@
+name: Deployment pipeline (Railway)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Check commit messages for #skip
+      - name: Check for #skip in commit messages
+        id: checkskip
+        run: |
+          if git log -1 --pretty=%B | grep -q "#skip"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install backend dependencies
+        if: steps.checkskip.outputs.skip == 'false'
+        run: cd ./backend && npm ci
+
+      - name: Install frontend dependencies
+        if: steps.checkskip.outputs.skip == 'false'
+        run: cd ./frontend && npm ci
+
+      - name: Check style
+        if: steps.checkskip.outputs.skip == 'false'
+        run: npm run eslint
+
+      - name: Build app (frontend)
+        if: steps.checkskip.outputs.skip == 'false'
+        run: cd ./frontend && npm run build
+
+      - name: Run tests backend
+        if: steps.checkskip.outputs.skip == 'false'
+        run: cd ./backend && npm test
+
+      - name: Run tests frontend
+        if: steps.checkskip.outputs.skip == 'false'
+        run: cd ./frontend && npm test        
+
+      - name: Notify Discord Success
+        if: success() && steps.checkskip.outputs.skip == 'false'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.WEBHOOK }}
+        with:
+          args: "✅ Deployment Successful from GitHub Actions"
+      
+      - name: Notify Discord Fail
+        if: failure() && steps.checkskip.outputs.skip == 'false'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.WEBHOOK }}
+        with:
+          args: "❌ Deployment Failed from GitHub Actions"
+      
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for #skip in commit messages
+        id: checkskip
+        run: |
+          if git log -1 --pretty=%B | grep -q "#skip"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi          
+
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.checkskip.outputs.skip == 'false'
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          INITIAL_VERSION: 0.0.0
