@@ -3,7 +3,7 @@ import { showNotification } from '../../reducers/notificationReducers'
 import { incrementLikes, deleteBlog } from '../../reducers/blogReducers'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import Comments from './comments'
+import Comments from './Comments'
 import { useNavigate } from 'react-router-dom'
 
 const Blog = () => {
