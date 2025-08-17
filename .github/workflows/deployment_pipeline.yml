@@ -8,13 +8,14 @@ on:
     branches: [main]
     types: [opened, synchronize]
 
+  
 permissions:
   contents: write
 
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,6 +49,12 @@ jobs:
 
       - name: Run tests backend
         if: steps.checkskip.outputs.skip == 'false'
+        env:
+          NODE_ENV: test
+          TEST_MONGODB_URI: ${{ vars.TEST_MONGODB_URI }}
+          MONGODB_URI: ${{ vars.MONGODB_URI }} 
+          PORT: ${{ vars.PORT }}
+          SECRET:  ${{ vars.SECRET }} 
         run: cd ./backend && npm test
 
       - name: Run tests frontend
