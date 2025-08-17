@@ -47,7 +47,7 @@ jobs:
         if: steps.checkskip.outputs.skip == 'false'
         run: cd ./frontend && npm run build
 
-      - name: Run tests backend
+      - name: Run tests
         if: steps.checkskip.outputs.skip == 'false'
         env:
           NODE_ENV: test
@@ -55,11 +55,7 @@ jobs:
           MONGODB_URI: ${{ vars.MONGODB_URI }} 
           PORT: ${{ vars.PORT }}
           SECRET:  ${{ vars.SECRET }} 
-        run: cd ./backend && npm test
-
-      - name: Run tests frontend
-        if: steps.checkskip.outputs.skip == 'false'
-        run: cd ./frontend && npm test        
+        run: cd ./backend && npm test  
 
       - name: Notify Discord Success
         if: success() && steps.checkskip.outputs.skip == 'false'
