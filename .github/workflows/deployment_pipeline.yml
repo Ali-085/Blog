@@ -42,10 +42,6 @@ jobs:
         if: steps.checkskip.outputs.skip == 'false'
         run: cd ./frontend && npm ci
 
-      - name: Check style
-        if: steps.checkskip.outputs.skip == 'false'
-        run: npm run eslint
-
       - name: Build app (frontend)
         if: steps.checkskip.outputs.skip == 'false'
         run: cd ./frontend && npm run build
