@@ -51,6 +51,5 @@ export const deleteBlog = id => {
     }
   }
 
-
-
 export default blogSlice.reducer
+
