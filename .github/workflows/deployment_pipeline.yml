@@ -61,7 +61,7 @@ jobs:
         if: success() && steps.checkskip.outputs.skip == 'false'
         uses: Ilshidur/action-discord@master
         env:
-          DISCORD_WEBHOOK: ${{ secrets.WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: "✅ Deployment Successful from GitHub Actions"
       
@@ -69,7 +69,7 @@ jobs:
         if: failure() && steps.checkskip.outputs.skip == 'false'
         uses: Ilshidur/action-discord@master
         env:
-          DISCORD_WEBHOOK: ${{ secrets.WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: "❌ Deployment Failed from GitHub Actions"
       
